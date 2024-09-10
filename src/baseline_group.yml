@@ -1,0 +1,10 @@
+prometheus:
+  url: 'http://0.0.0.0:9090/api/v1/query'
+
+metrics:
+  to_monitor:
+    - 'go_gc_duration_seconds'
+    - 'node_cpu_seconds_total'
+
+csv:
+  file: 'bandwidth_log.csv'
