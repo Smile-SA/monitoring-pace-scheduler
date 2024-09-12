@@ -82,47 +82,23 @@ def update_prometheus_config(metric_intervals):
     else:
         print("Failed to reload Prometheus")
 
-# Function to collect metric updates for a given duration
-def collect_metric_updates(metric_name, interval, duration):
-    updates = []
-    end_time = time.time() + duration
-    while time.time() < end_time:
-        current_metric_values = fetch_metric_values(metric_name)
-        if current_metric_values:
-            updates.append((time.time(), current_metric_values))
-        time.sleep(interval)
-    return updates
-
 # Function to analyze update frequency with 5% change threshold
-def analyze_update_frequency(updates, current_scrape_interval):
-    total_time = 0
+def analyze_update_frequency(current_metrics, current_scrape_interval):
     significant_changes = 0
 
-    for i in range(1, len(updates)):
-        previous_time, previous_metrics = updates[i - 1]
-        current_time, current_metrics = updates[i]
+    for prev, curr in zip(current_metrics[:-1], current_metrics[1:]):
+        prev_value = prev[1]
+        curr_value = curr[1]
 
-        time_difference = current_time - previous_time
+        if prev_value == 0.0:
+            continue
 
-        for prev, curr in zip(previous_metrics, current_metrics):
-            prev_value = prev[1]
-            curr_value = curr[1]
+        change_percent = abs((curr_value - prev_value) / prev_value)
 
-            if prev_value == 0.0:
-                continue
-
-            change_percent = abs((curr_value - prev_value) / prev_value)
-
-            if change_percent > UPDATE_THRESHOLD:
-                total_time += time_difference
-                significant_changes += 1
+        if change_percent > UPDATE_THRESHOLD:
+            significant_changes += 1
 
     if significant_changes > 0:
-        avg_change_time = total_time / significant_changes
-    else:
-        avg_change_time = float('inf')
-
-    if avg_change_time < current_scrape_interval:
         new_scrape_interval = max(current_scrape_interval // 2, 10)
     else:
         new_scrape_interval = min(current_scrape_interval * 2, MAX_SCRAPE_INTERVAL)
@@ -151,16 +127,20 @@ def monitor_metrics():
     while True:
         for metric_name, scrape_interval in metric_intervals.items():
             print(f"Processing metric: {metric_name} with current scrape interval = {scrape_interval}s")
-            updates = collect_metric_updates(metric_name, scrape_interval, scrape_interval * 2)
+            
+            # Fetch metric values
+            current_metric_values = fetch_metric_values(metric_name)
 
-            new_scrape_interval = analyze_update_frequency(updates, scrape_interval)
+            # Analyze and adjust scrape intervals if necessary
+            new_scrape_interval = analyze_update_frequency(current_metric_values, scrape_interval)
 
             if new_scrape_interval != scrape_interval:
                 print(f"Adjusting scrape interval for {metric_name}: New Scrape Interval = {new_scrape_interval}s")
                 metric_intervals[metric_name] = new_scrape_interval
                 update_prometheus_config(metric_intervals)
-            else:
-                print(f"No significant changes detected for {metric_name}.")
+
+            # Sleep for the new scrape interval
+            time.sleep(new_scrape_interval)
 
 if __name__ == "__main__":
     monitor_metrics()
