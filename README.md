@@ -10,6 +10,48 @@ Before running the scripts, ensure that you have the following:
 - Required Python packages installed (`requests`, `yaml`, `csv`)
 - `tcpdump` installed for network capture
 
+### Installation
+Here’s a simplified setup that ensures Prometheus and Node Exporter remain in their extracted folders (without moving them elsewhere) and integrates with your existing script in folder `A`.
+
+#### Download Prometheus and Node Exporter
+1. **Download and extract Prometheus**:
+   ```bash
+   wget https://github.com/prometheus/prometheus/releases/download/v2.46.0/prometheus-2.46.0.linux-amd64.tar.gz
+   tar xvf prometheus-2.46.0.linux-amd64.tar.gz
+   ```
+
+2. **Download and extract Node Exporter**:
+   ```bash
+   wget https://github.com/prometheus/node_exporter/releases/download/v1.6.0/node_exporter-1.6.0.linux-amd64.tar.gz
+   tar xvf node_exporter-1.6.0.linux-amd64.tar.gz
+   ```
+3. **Ensure Prometheus is scraping Node Exporter** by editing the Prometheus configuration:
+
+
+   Add this under `scrape_configs` in `prometheus.yml` from the extracted Prometheus folder:
+   ```yaml
+   - job_name: 'node_exporter'
+     static_configs:
+       - targets: ['0.0.0.0:9100']
+   ```
+
+#### Start Prometheus and Node Exporter
+1. **Start Prometheus**:
+   From the extracted Prometheus folder, run:
+   ```bash
+   ./prometheus --config.file=./prometheus.yml
+   ```
+
+2. **Start Node Exporter**:
+   From the extracted Node Exporter folder, run:
+   ```bash
+   ./node_exporter
+   ```
+
+
+
+
+
 ### Running the Scripts
 
 #### 1. Baseline Monitoring (`baseline.py`)
@@ -29,7 +71,18 @@ To run:
 ```bash
 ./scheduler.py
 ```
-#### 3. PCAP Bandwidth Calculator (`pcap_bandwidth_calculator.py`)
+
+### Benchmarking
+
+####  TCPDump Capture (`tcpdump_capture.sh`)
+
+This shell script uses `tcpdump` to capture network traffic for a specific duration on the loopback interface (`lo`) and port 9090. The captured data is saved in a `.pcap` file for later analysis.
+
+To run:
+```bash
+./tcpdump_capture.sh <output_file> <duration_in_minutes>
+```
+####  PCAP Bandwidth Calculator (`pcap_bandwidth_calculator.py`)
 
 This Python script calculates the bandwidth based on a `.pcap` file generated from a network capture. It computes the total data size and bandwidth over a given duration.
 
@@ -43,15 +96,6 @@ To run:
 This will output:
 - Data size in bytes, kilobytes (KB), and megabytes (MB)
 - Bandwidth in bits per second (bps), kilobits per second (kbps), and megabits per second (Mbps)
-
-#### 4. TCPDump Capture (`tcpdump_capture.sh`)
-
-This shell script uses `tcpdump` to capture network traffic for a specific duration on the loopback interface (`lo`) and port 9090. The captured data is saved in a `.pcap` file for later analysis.
-
-To run:
-```bash
-./tcpdump_capture.sh <output_file> <duration_in_minutes>
-```
 
 
 
