@@ -11,7 +11,7 @@ Before running the scripts, ensure that you have the following:
 - `tcpdump` installed for network capture
 
 ### Installation
-Here’s a simplified setup that ensures Prometheus and Node Exporter remain in their extracted folders (without moving them elsewhere) and integrates with your existing script in folder `A`.
+
 
 #### Download Prometheus and Node Exporter
 1. **Download and extract Prometheus**:
