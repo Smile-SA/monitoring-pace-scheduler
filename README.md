@@ -97,8 +97,12 @@ This will output:
 - Data size in bytes, kilobytes (KB), and megabytes (MB)
 - Bandwidth in bits per second (bps), kilobits per second (kbps), and megabits per second (Mbps)
 
+#### Gatling Scenario 
+
+pull this project ```https://github.com/gatling/gatling-maven-plugin-demo-java``` and cd into it.
 
 
+Run the simulation ```./mvnw gatling:test -Dgatling.simulationClass=com.example.RepeatSimulation```
 
 ## Output
 
