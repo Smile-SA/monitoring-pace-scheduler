@@ -105,6 +105,78 @@ def analyze_update_frequency(current_metrics, current_scrape_interval):
 
     return new_scrape_interval
 
+# Function to analyze update frequency with fixed increment approach
+def analyze_update_frequency_fixed_increment(updates, current_scrape_interval, increment=15):
+    total_time = 0
+    significant_changes = 0
+
+    for i in range(1, len(updates)):
+        previous_time, previous_metrics = updates[i - 1]
+        current_time, current_metrics = updates[i]
+
+        time_difference = current_time - previous_time
+
+        for prev, curr in zip(previous_metrics, current_metrics):
+            prev_value = prev[1]
+            curr_value = curr[1]
+
+            if prev_value == 0.0:
+                continue
+
+            change_percent = abs((curr_value - prev_value) / prev_value)
+
+            if change_percent > UPDATE_THRESHOLD:
+                total_time += time_difference
+                significant_changes += 1
+
+    if significant_changes > 0:
+        avg_change_time = total_time / significant_changes
+    else:
+        avg_change_time = float('inf')
+
+    if avg_change_time < current_scrape_interval:
+        new_scrape_interval = min(current_scrape_interval + increment, MAX_SCRAPE_INTERVAL)
+    else:
+        new_scrape_interval = max(current_scrape_interval - increment, 10)
+
+    return new_scrape_interval
+
+# Function to analyze update frequency with proportional increment approach
+def analyze_update_frequency_proportional_increment(updates, current_scrape_interval, percentage=0.10):
+    total_time = 0
+    significant_changes = 0
+
+    for i in range(1, len(updates)):
+        previous_time, previous_metrics = updates[i - 1]
+        current_time, current_metrics = updates[i]
+
+        time_difference = current_time - previous_time
+
+        for prev, curr in zip(previous_metrics, current_metrics):
+            prev_value = prev[1]
+            curr_value = curr[1]
+
+            if prev_value == 0.0:
+                continue
+
+            change_percent = abs((curr_value - prev_value) / prev_value)
+
+            if change_percent > UPDATE_THRESHOLD:
+                total_time += time_difference
+                significant_changes += 1
+
+    if significant_changes > 0:
+        avg_change_time = total_time / significant_changes
+    else:
+        avg_change_time = float('inf')
+
+    if avg_change_time < current_scrape_interval:
+        new_scrape_interval = min(int(current_scrape_interval * (1 + percentage)), MAX_SCRAPE_INTERVAL)
+    else:
+        new_scrape_interval = max(int(current_scrape_interval * (1 - percentage)), 10)
+
+    return new_scrape_interval
+
 # Helper function to get the scrape interval for a metric from prometheus.yml
 def get_metric_scrape_interval(metric_name):
     with open(PROMETHEUS_CONFIG_FILE, 'r') as file:
