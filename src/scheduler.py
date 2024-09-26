@@ -43,15 +43,21 @@ def fetch_metric_values(metric_name):
 
     # Log the bandwidth and data size
     current_time = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
-    print(f"[{current_time}] Metric: '{metric_name}', Bandwidth: {bandwidth_mbps:.2f} Mbps, Data Size: {data_size_kb:.2f} KB")
-
-    # Write to CSV
-    log_to_csv(current_time, metric_name, bandwidth_mbps, data_size_kb)
-
+    
     results = response.json()['data']['result']
+    
     if results:
+        for result in results:
+            metric_value = float(result['value'][1])  # Get the current metric value
+            print(f"[{current_time}] Metric: '{metric_name}', Metric Value: {metric_value:.6f}, Bandwidth: {bandwidth_mbps:.2f} Mbps, Data Size: {data_size_kb:.2f} KB")
+            
+            # Log to CSV
+            log_to_csv(current_time, metric_name, metric_value, bandwidth_mbps, data_size_kb)
+        
         return [(result['metric'], float(result['value'][1])) for result in results]
+
     return []
+
 
 # Function to update Prometheus configuration
 def update_prometheus_config(metric_intervals):
@@ -82,23 +88,47 @@ def update_prometheus_config(metric_intervals):
     else:
         print("Failed to reload Prometheus")
 
+# Function to collect metric updates for a given duration
+def collect_metric_updates(metric_name, interval, duration):
+    updates = []
+    end_time = time.time() + duration
+    while time.time() < end_time:
+        current_metric_values = fetch_metric_values(metric_name)
+        if current_metric_values:
+            updates.append((time.time(), current_metric_values))
+        time.sleep(interval)
+    return updates
+
 # Function to analyze update frequency with 5% change threshold
-def analyze_update_frequency(current_metrics, current_scrape_interval):
+def analyze_update_frequency(updates, current_scrape_interval):
+    total_time = 0
     significant_changes = 0
 
-    for prev, curr in zip(current_metrics[:-1], current_metrics[1:]):
-        prev_value = prev[1]
-        curr_value = curr[1]
+    for i in range(1, len(updates)):
+        previous_time, previous_metrics = updates[i - 1]
+        current_time, current_metrics = updates[i]
 
-        if prev_value == 0.0:
-            continue
+        time_difference = current_time - previous_time
 
-        change_percent = abs((curr_value - prev_value) / prev_value)
+        for prev, curr in zip(previous_metrics, current_metrics):
+            prev_value = prev[1]
+            curr_value = curr[1]
 
-        if change_percent > UPDATE_THRESHOLD:
-            significant_changes += 1
+            if prev_value == 0.0:
+                continue
+
+            change_percent = abs((curr_value - prev_value) / prev_value)
+
+            if change_percent > UPDATE_THRESHOLD:
+                total_time += time_difference
+                significant_changes += 1
 
     if significant_changes > 0:
+        avg_change_time = total_time / significant_changes
+    else:
+        avg_change_time = float('inf')
+
+    if avg_change_time < current_scrape_interval:
         new_scrape_interval = max(current_scrape_interval // 2, 10)
     else:
         new_scrape_interval = min(current_scrape_interval * 2, MAX_SCRAPE_INTERVAL)
@@ -199,19 +229,17 @@ def monitor_metrics():
     while True:
         for metric_name, scrape_interval in metric_intervals.items():
             print(f"Processing metric: {metric_name} with current scrape interval = {scrape_interval}s")
-            
-            # Fetch metric values
-            current_metric_values = fetch_metric_values(metric_name)
+            updates = collect_metric_updates(metric_name, 1, scrape_interval)
 
-            # Analyze and adjust scrape intervals if necessary
-            new_scrape_interval = analyze_update_frequency(current_metric_values, scrape_interval)
+            new_scrape_interval = analyze_update_frequency(updates, scrape_interval)
 
             if new_scrape_interval != scrape_interval:
                 print(f"Adjusting scrape interval for {metric_name}: New Scrape Interval = {new_scrape_interval}s")
                 metric_intervals[metric_name] = new_scrape_interval
-                update_prometheus_config(metric_intervals)
-
-            # Sleep for the new scrape interval
+                # Uncomment the line below to apply updates in Prometheus
+                # update_prometheus_config(metric_intervals)
+            else:
+                print(f"No significant changes detected for {metric_name}.")
             time.sleep(new_scrape_interval)
 
 if __name__ == "__main__":

@@ -12,5 +12,4 @@ thresholds:
 
 metrics:
   to_monitor:
-    - 'go_gc_duration_seconds'
-    - 'node_cpu_seconds_total'
+    - '(1 - avg(rate(node_cpu_seconds_total{mode="idle"}[1m])) by (instance)) * 100'
