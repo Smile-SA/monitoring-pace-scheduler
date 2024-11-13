@@ -13,42 +13,76 @@ Before running the scripts, ensure that you have the following:
 ### Installation
 
 
-#### Download Prometheus and Node Exporter
-1. **Download and extract Prometheus**:
+1. **Prometheus**:
    ```bash
-   wget https://github.com/prometheus/prometheus/releases/download/v2.46.0/prometheus-2.46.0.linux-amd64.tar.gz
-   tar xvf prometheus-2.46.0.linux-amd64.tar.gz
+   wget https://github.com/prometheus/prometheus/releases/download/v2.46.0/prometheus-v2.46.0.linux-amd64.tar.gz
+   tar -xvf prometheus-v2.46.0.linux-amd64.tar.gz
+   sudo mv prometheus-v2.46.0.linux-amd64/prometheus /usr/local/bin/
+   sudo mv prometheus-v2.46.0.linux-amd64/promtool /usr/local/bin/
    ```
 
-2. **Download and extract Node Exporter**:
+   ```bash   
+   sudo mkdir -p /etc/prometheus /etc/prometheus1 /etc/prometheus2
+   sudo mkdir -p /var/lib/prometheus /var/lib/prometheus1 /var/lib/prometheus2
+   ```
+
+2. **Node Exporter**:
    ```bash
    wget https://github.com/prometheus/node_exporter/releases/download/v1.6.0/node_exporter-1.6.0.linux-amd64.tar.gz
    tar xvf node_exporter-1.6.0.linux-amd64.tar.gz
    ```
+      ```bash   
+     /usr/local/bin/node_exporter
+    ```
 3. **Ensure Prometheus is scraping Node Exporter** by editing the Prometheus configuration:
 
 
-   Add this under `scrape_configs` in `prometheus.yml` from the extracted Prometheus folder:
+   Add this under `scrape_configs` in `/etc/prometheus1/prometheus.yml` from the extracted Prometheus folder:
    ```yaml
+   scrape_configs:
+   
+   - job_name: "prometheus"
+      static_configs:
+         - targets: ["localhost:9091"]
+   
    - job_name: 'node_exporter'
-     static_configs:
-       - targets: ['0.0.0.0:9100']
+      static_configs:
+         - targets: ['localhost:9100']
+   ```
+
+   Add this under `scrape_configs` in `/etc/prometheus2/prometheus.yml` from the extracted Prometheus folder:
+   ```yaml
+   scrape_configs:
+   
+   - job_name: "prometheus"
+      static_configs:
+         - targets: ["localhost:9092"]
+   
+   - job_name: 'node_exporter'
+      static_configs:
+         - targets: ['localhost:9100']
    ```
 
 #### Start Prometheus and Node Exporter
 1. **Start Prometheus**:
    From the extracted Prometheus folder, run:
    ```bash
-   ./prometheus --config.file=./prometheus.yml
+   prometheus --config.file=/etc/prometheus1/prometheus.yml --storage.tsdb.path=/var/lib/prometheus1 --web.listen-address=:9091
+   ```
+   ```bash
+   prometheus --config.file=/etc/prometheus2/prometheus.yml --storage.tsdb.path=/var/lib/prometheus1 --web.listen-address=:9092
    ```
 
 2. **Start Node Exporter**:
    From the extracted Node Exporter folder, run:
    ```bash
-   ./node_exporter
+   /usr/local/bin/node_exporter
    ```
 
+#### Gatling installation
+git clone ```https://github.com/gatling/gatling-maven-plugin-demo-java.git``` 
 
+```cp src/ComputerDatabaseSimulation.java gatling-maven-plugin-demo-java/src/test/java/computerdatabase```
 
 
 
@@ -60,7 +94,7 @@ This script fetches the specified Prometheus metrics, logs bandwidth (in Mbps) a
 
 To run:
 ```bash
-./baseline.py
+sudo timeout 3600 python3 baseline.py 
 ```
 
 #### 2. Dynamic Scheduler (`scheduler.py`)
@@ -69,9 +103,15 @@ The scheduler adjusts Prometheus scrape intervals based on metric update frequen
 
 To run:
 ```bash
-./scheduler.py
+sudo timeout 3600 python3 scheduler.py 
 ```
 
+```bash
+sudo timeout 3601 tcpdump -i lo -w dynamic-group.pcap port 9091 -v
+```
+```bash
+sudo timeout 3601 tcpdump -i lo -w baseline-group.pcap port 9092 -v
+```
 ### Benchmarking
 
 ####  TCPDump Capture (`tcpdump_capture.sh`)
