@@ -28,7 +28,7 @@ def log_to_csv(timestamp, metric_name, metric_value, bandwidth_mbps, data_size_k
 # Function to fetch current metric values from Prometheus and log bandwidth/data size
 def fetch_metric_values(metric_name):
     start_time = time.time()  # Track the time the request was made
-    response = requests.get(f'http://localhost:9090/api/v1/query?query={metric_name}')
+    response = requests.get(f'http://localhost:9092/api/v1/query?query={metric_name}')
     response_time = time.time() - start_time  # Measure the time taken to get a response
 
     bandwidth_used = len(response.content)  # Get the size of the response in bytes

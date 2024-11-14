@@ -1,9 +1,9 @@
 prometheus:
   config_file: 'prometheus.yml'
-  reload_url: 'http://0.0.0.0:9090/-/reload'
+  reload_url: 'http://0.0.0.0:9091/-/reload'
 
 csv:
-  file: 'metrics_bandwidth_log.csv'
+  file: 'dynamic.csv'
 
 thresholds:
   update_threshold: 0.05

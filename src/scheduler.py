@@ -34,7 +34,7 @@ def log_to_csv(timestamp, metric_name, bandwidth_mbps, data_size_kb):
 # Function to fetch current metric values from Prometheus and log bandwidth/data size
 def fetch_metric_values(metric_name):
     start_time = time.time()  # Track the time the request was made
-    response = requests.get(f'http://localhost:9090/api/v1/query?query={metric_name}')
+    response = requests.get(f'http://localhost:9091/api/v1/query?query={metric_name}')
     response_time = time.time() - start_time  # Measure the time taken to get a response
 
     bandwidth_used = len(response.content)  # Get the size of the response in bytes
@@ -236,8 +236,7 @@ def monitor_metrics():
             if new_scrape_interval != scrape_interval:
                 print(f"Adjusting scrape interval for {metric_name}: New Scrape Interval = {new_scrape_interval}s")
                 metric_intervals[metric_name] = new_scrape_interval
-                # Uncomment the line below to apply updates in Prometheus
-                # update_prometheus_config(metric_intervals)
+
             else:
                 print(f"No significant changes detected for {metric_name}.")
             time.sleep(new_scrape_interval)

@@ -1,9 +1,9 @@
 prometheus:
-  url: 'http://0.0.0.0:9090/api/v1/query'
+  url: 'http://0.0.0.0:9092/api/v1/query'
 
 metrics:
   to_monitor:
     - '(1 - avg(rate(node_cpu_seconds_total{mode="idle"}[1m])) by (instance)) * 100'
 
 csv:
-  file: 'bandwidth_log.csv'
+  file: 'baseline.csv'
