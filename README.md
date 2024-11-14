@@ -78,6 +78,8 @@ Before running the scripts, ensure that you have the following:
    /usr/local/bin/node_exporter
    ```
 
+#### git clone the project and cd into it
+
 #### Gatling installation
 git clone ```https://github.com/gatling/gatling-maven-plugin-demo-java.git``` 
 
@@ -120,7 +122,6 @@ cd path/to/gatling-maven-plugin-demo-java
 ### Benchmarking
 
 
-To run:
 ```bash
 ./pcap_benchmark.sh baseline-group.pcap 3600
 ```
