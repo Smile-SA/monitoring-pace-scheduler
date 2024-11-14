@@ -1,15 +1,15 @@
 ## Monitoring Pace Scheduler 
 
-This project is designed to monitor Node Exporter/Prometheus metrics, log bandwidth usage, data size, and capture network traffic data.
+This project is designed to monitor Node Exporter/Prometheus metrics, log bandwidth usage, data size, and capture network traffic data. It dynamically adjusts the data collection process based on real-time changes in system metrics, optimizing monitoring efficiency and resource usage.
 
-### Prerequisites
+## Prerequisites
 
 Before running the scripts, ensure that you have the following:
 
 - Required Python packages installed (`requests`, `yaml`, `csv`)
 - `tcpdump` installed for network capture
 
-### Installation
+## Installation
 
 
 1. **Prometheus**:
@@ -87,7 +87,7 @@ git clone ```https://github.com/gatling/gatling-maven-plugin-demo-java.git```
 
 
 
-### Running the experiments
+## Running the experiments
 
 ```bash
 sudo timeout 3600 python3 baseline.py 
