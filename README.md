@@ -14,7 +14,7 @@ Before running the scripts, ensure that you have the following:
 
 1. **Prometheus**:
    ```bash
-   wget https://github.com/prometheus/prometheus/releases/download/v2.46.0/prometheus-v2.46.0.linux-amd64.tar.gz
+   wget https://github.com/prometheus/prometheus/releases/download/v2.46.0/prometheus-2.46.0.linux-amd64.tar.gz
    tar -xvf prometheus-v2.46.0.linux-amd64.tar.gz
    sudo mv prometheus-v2.46.0.linux-amd64/prometheus /usr/local/bin/
    sudo mv prometheus-v2.46.0.linux-amd64/promtool /usr/local/bin/
