@@ -99,7 +99,7 @@ def collect_metric_updates(metric_name, interval, duration):
         time.sleep(interval)
     return updates
 
-# Function to analyze update frequency with 5% change threshold
+
 def analyze_update_frequency(updates, current_scrape_interval):
     total_time = 0
     significant_changes = 0
