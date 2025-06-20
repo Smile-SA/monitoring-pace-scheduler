@@ -12,7 +12,7 @@ with open('baseline_group.yml', 'r') as config_file:
 PROMETHEUS_URL = config['prometheus']['url']
 METRICS_TO_MONITOR = config['metrics']['to_monitor']
 CSV_FILE = config['csv']['file']
-
+DEFAULT_SCRAPE_INTERVAL = 15
 if not os.path.exists(CSV_FILE):
     with open(CSV_FILE, 'w', newline='') as file:
         writer = csv.writer(file)
