@@ -1,142 +1,114 @@
-## Monitoring Pace Scheduler 
 
-This project is designed to monitor Node Exporter/Prometheus metrics, log bandwidth usage, data size, and capture network traffic data. It dynamically adjusts the data collection process based on real-time changes in system metrics, optimizing monitoring efficiency and resource usage.
+# Monitoring Pace Scheduler
+## Overview
+The Monitoring Pace Scheduler is an adaptive monitoring solution that dynamically adjusts collection intervals based on system behavior patterns. Unlike traditional fixed-interval approaches that collect data at constant rates regardless of system state, it implements intelligent scheduling by analyzing metric change frequencies and automatically optimizing monitoring frequencies to match system activity levels. The scheduler reduces unnecessary data collection during stable periods while increasing monitoring frequency during high-activity phases, significantly improving resource efficiency without compromising monitoring accuracy.
+
+
+
+## Features
+
+- Dynamic metric-based interval adjustment (user-defined thresholds)  
+-  Reduced monitoring overhead during low activity  
+-  Network traffic benchmarking (via `tcpdump`)  
+-  Load simulation using Gatling  
+
+---
 
 ## Prerequisites
 
-Before running the scripts, ensure that you have the following:
+Before running the experiments:
 
-- Required Python packages installed (`requests`, `yaml`, `csv`)
-- `tcpdump` installed for network capture
+- Python 3.x with:
+  ```bash
+  pip install requests pyyaml
+  ```
+    ```bash
+  pip install -r requirements.txt
+  ```
 
-## Installation
+- tcpdump installed:
 
+  ```bash
+  sudo apt install tcpdump
 
-1. **Prometheus**:
-   ```bash
-   wget https://github.com/prometheus/prometheus/releases/download/v2.46.0/prometheus-2.46.0.linux-amd64.tar.gz
-   tar -xvf prometheus-v2.46.0.linux-amd64.tar.gz
-   sudo mv prometheus-v2.46.0.linux-amd64/prometheus /usr/local/bin/
-   sudo mv prometheus-v2.46.0.linux-amd64/promtool /usr/local/bin/
-   ```
-
-   ```bash   
-   sudo mkdir -p /etc/prometheus /etc/prometheus1 /etc/prometheus2
-   sudo mkdir -p /var/lib/prometheus /var/lib/prometheus1 /var/lib/prometheus2
-   ```
-
-2. **Node Exporter**:
-   ```bash
-   wget https://github.com/prometheus/node_exporter/releases/download/v1.6.0/node_exporter-1.6.0.linux-amd64.tar.gz
-   tar xvf node_exporter-1.6.0.linux-amd64.tar.gz
-   ```
-      ```bash   
-     /usr/local/bin/node_exporter
-    ```
-3. **Ensure Prometheus is scraping Node Exporter** by editing the Prometheus configuration:
+  ```
 
 
-   Add this under `scrape_configs` in `/etc/prometheus1/prometheus.yml` from the extracted Prometheus folder:
-   ```yaml
-   scrape_configs:
-   
-   - job_name: "prometheus"
-      static_configs:
-         - targets: ["localhost:9091"]
-   
-   - job_name: 'node_exporter'
-      static_configs:
-         - targets: ['localhost:9100']
-   ```
+* Prometheus and Node Exporter installed – 👉 [See installation guide](docs/prometheus_node_exporter.md)
+* (Optional) Gatling installed and configured – 👉 [See simulation setup](docs/gatling_simulation.md)
 
-   Add this under `scrape_configs` in `/etc/prometheus2/prometheus.yml` from the extracted Prometheus folder:
-   ```yaml
-   scrape_configs:
-   
-   - job_name: "prometheus"
-      static_configs:
-         - targets: ["localhost:9092"]
-   
-   - job_name: 'node_exporter'
-      static_configs:
-         - targets: ['localhost:9100']
-   ```
+---
 
-#### Start Prometheus and Node Exporter
-1. **Start Prometheus**:
-   From the extracted Prometheus folder, run:
-   ```bash
-   prometheus --config.file=/etc/prometheus1/prometheus.yml --storage.tsdb.path=/var/lib/prometheus1 --web.listen-address=:9091
-   ```
-   ```bash
-   prometheus --config.file=/etc/prometheus2/prometheus.yml --storage.tsdb.path=/var/lib/prometheus1 --web.listen-address=:9092
-   ```
+## Configuration
 
-2. **Start Node Exporter**:
-   From the extracted Node Exporter folder, run:
-   ```bash
-   /usr/local/bin/node_exporter
-   ```
+### Selecting a Metric for Dynamic Scraping
 
-#### git clone the project and cd into it
+Edit `config.yaml` to choose the metric and behavior:
 
-#### Gatling installation
-git clone ```https://github.com/gatling/gatling-maven-plugin-demo-java.git``` 
-
-```cp src/ComputerDatabaseSimulation.java gatling-maven-plugin-demo-java/src/test/java/computerdatabase```
+```yaml
+prometheus:
+  config_file: 'prometheus.yml'
+  reload_url: 'http://0.0.0.0:9091/-/reload'
 
 
 
-## Running the experiments
+thresholds:
+  update_threshold: 0.05
+  default_scrape_interval: 15
+  max_scrape_interval: 900
 
-```bash
-sudo timeout 3600 python3 baseline.py 
+metrics:
+  to_monitor:
+    - '(1 - avg(rate(node_cpu_seconds_total{mode="idle"}[1m])) by (instance)) * 100'
+
+csv:
+  file: 'dynamic-results.csv'
+
 ```
 
 
-```bash
-sudo timeout 3600 python3 scheduler.py 
-```
+
+---
+
+## Running the Experiments
+
+###  Launch monitoring groups
+
+
+Run the following commands to start the two monitoring scripts:
+
+* `baseline.py` uses a fixed scraping interval.
+* `scheduler.py` adapts the interval dynamically based on metric variations.
+Each command is wrapped with `timeout 3600`, which means the scripts will run for **1 hour (3600 seconds)** and then terminate automatically.
 
 ```bash
-sudo timeout 3601 tcpdump -i lo -w dynamic-group.pcap port 9091 -v
+sudo timeout 3600 python3 baseline.py
+sudo timeout 3600 python3 scheduler.py
 ```
 
-
-```bash
-sudo timeout 3601 tcpdump -i lo -w baseline-group.pcap port 9092 -v
-```
-
-```bash
-python3 test-app/app.py
-```
-
-```bash
-cp src/gatling-test.sh path/to/gatling-maven-plugin-demo-java
-cd path/to/gatling-maven-plugin-demo-java
-
-./gatling-test.sh
-```
+This duration ensures a sufficient observation window for capturing metric variations.
 
 
-### Benchmarking
+
+##  Benchmark Evaluation
+
+This section explains how the efficiency of the Monitoring Pace Scheduler is evaluated by comparing the baseline (fixed interval) and dynamic (adaptive interval) monitoring strategies.
+
+We simulate load using **Gatling**, capture Prometheus traffic using **tcpdump**, and analyze the results to measure the total data transmitted and average bandwidth.
+
+For full instructions and detailed steps, see the dedicated document:  [Benchmark Section](docs/benchmark.md)
 
 
-```bash
-./pcap_benchmark.sh baseline-group.pcap 3600
-```
-
-```bash
-./pcap_benchmark.sh dynamic-group.pcap 3600
-```
-
-
-This will output:
-- Data size in bytes, kilobytes (KB), and megabytes (MB)
-- Bandwidth in bits per second (bps), kilobits per second (kbps), and megabits per second (Mbps)
-
+---
 
 
 ## License
 
 This project is licensed under the MIT License.
+
+
+
+
+
+
+
