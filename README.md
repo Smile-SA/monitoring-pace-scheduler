@@ -7,21 +7,20 @@ The Monitoring Pace Scheduler is an adaptive monitoring solution that dynamicall
 
 ## Features
 
-- Dynamic metric-based interval adjustment (user-defined thresholds)  
--  Reduced monitoring overhead during low activity  
--  Network traffic benchmarking (via `tcpdump`)  
--  Load simulation using Gatling  
+- Dynamic scrape interval adaptation per Prometheus metric
+- User-defined thresholds and metric patterns
+- YAML-based configuration for Prometheus reload
+- Minimal integration steps
+ 
 
 ---
 
 ## Prerequisites
 
-Before running the experiments:
+Ensure the following tools are installed:
 
 - Python 3.x with:
-  ```bash
-  pip install requests pyyaml
-  ```
+
     ```bash
   pip install -r requirements.txt
   ```
@@ -34,8 +33,8 @@ Before running the experiments:
   ```
 
 
-* Prometheus and Node Exporter installed – 👉 [See installation guide](docs/prometheus_node_exporter.md)
-* (Optional) Gatling installed and configured – 👉 [See simulation setup](docs/gatling_simulation.md)
+* Prometheus and Node Exporter installed –  [Installation guide](docs/prometheus_node_exporter.md)
+* (Optional) Gatling installed and configured –  [Simulation setup](docs/gatling_simulation.md)
 
 ---
 
@@ -90,14 +89,17 @@ This duration ensures a sufficient observation window for capturing metric varia
 
 
 
-##  Benchmark Evaluation
 
-This section explains how the efficiency of the Monitoring Pace Scheduler is evaluated by comparing the baseline (fixed interval) and dynamic (adaptive interval) monitoring strategies.
+## Benchmark & Evaluation
 
-We simulate load using **Gatling**, capture Prometheus traffic using **tcpdump**, and analyze the results to measure the total data transmitted and average bandwidth.
+A separate benchmarking procedure is provided to validate the scheduler’s efficiency.
+This includes:
+
+- Load simulation with Gatling (optional)
+- Network traffic capture using `tcpdump`
+- Comparison of how closely the dynamic strategy matches the baseline values
 
 For full instructions and detailed steps, see the dedicated document:  [Benchmark Section](docs/benchmark.md)
-
 
 ---
 
@@ -105,6 +107,11 @@ For full instructions and detailed steps, see the dedicated document:  [Benchmar
 ## License
 
 This project is licensed under the MIT License.
+
+
+
+
+
 
 
 
