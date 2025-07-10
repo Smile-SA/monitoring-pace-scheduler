@@ -17,6 +17,8 @@ The Monitoring Pace Scheduler is an adaptive monitoring solution that dynamicall
 
 ## Prerequisites
 
+git clone the project and cd into it.
+
 Ensure the following tools are installed:
 
 - Python 3.x with:
