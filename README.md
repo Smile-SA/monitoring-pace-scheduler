@@ -17,107 +17,101 @@ The Monitoring Pace Scheduler is an adaptive monitoring solution that dynamicall
 
 ## Prerequisites
 
-git clone the project and cd into it.
+Clone the repository:
 
-Ensure the following tools are installed:
+```bash
+git clone https://gitlab.com/your-repo/monitoring-pace-scheduler.git
+cd monitoring-pace-scheduler
+```
 
-- Python 3.x with:
+Install dependencies:
 
-    ```bash
-  pip install -r requirements.txt
-  ```
+```bash
+pip install -r requirements.txt
+```
 
-- tcpdump installed:
+Install `tcpdump`:
 
-  ```bash
-  sudo apt install tcpdump
+```bash
+sudo apt install tcpdump
+```
 
-  ```
+Additional components:
 
-
-* Prometheus and Node Exporter installed –  [Installation guide](docs/prometheus_node_exporter.md)
-* (Optional) Gatling installed and configured –  [Simulation setup](docs/gatling_simulation.md)
+*  Prometheus & Node Exporter – [Setup Guide](docs/prometheus_node_exporter.md)
+*  (Optional) Gatling for load simulation – [Simulation Setup](docs/gatling_simulation.md)
 
 ---
 
 ## Configuration
 
-### Selecting a Metric for Dynamic Scraping
+### Set up the Monitoring Behavior
 
-Edit `config.yaml` to choose the metric and behavior:
+Edit `config.yaml` to define scrape logic:
 
 ```yaml
 prometheus:
-  config_file: 'prometheus.yml'
-  reload_url: 'http://0.0.0.0:9091/-/reload'
-
-
+  config_file: 'prometheus.yml'             # Path to Prometheus config
+  reload_url: 'http://0.0.0.0:9091/-/reload' # Reload endpoint for config changes
 
 thresholds:
-  update_threshold: 0.05
-  default_scrape_interval: 15
-  max_scrape_interval: 900
+  update_threshold: 0.05       # Minimum change ratio to trigger interval update
+  default_scrape_interval: 15  # Initial interval (in seconds)
+  max_scrape_interval: 900     # Upper bound for adaptive scraping
 
 metrics:
   to_monitor:
-    - '(1 - avg(rate(node_cpu_seconds_total{mode="idle"}[1m])) by (instance)) * 100'
+    - '(1 - avg(rate(node_cpu_seconds_total{mode="idle"}[1m])) by (instance)) * 100'  # CPU usage %
 
 csv:
-  file: 'dynamic-results.csv'
-
+  file: 'dynamic-results.csv'  # Output CSV file path
 ```
-
-
 
 ---
 
-## Running the Experiments
+## Execution
 
-###  Launch monitoring groups
+### Launch the Monitoring Algorithms
 
-
-Run the following commands to start the two monitoring scripts:
-
-* `baseline.py` uses a fixed scraping interval.
-* `scheduler.py` adapts the interval dynamically based on metric variations.
-Each command is wrapped with `timeout 3600`, which means the scripts will run for **1 hour (3600 seconds)** and then terminate automatically.
+Run the following commands to start the fixed and adaptive monitoring groups:
 
 ```bash
+# Run baseline group (fixed interval)
 sudo timeout 3600 python3 baseline.py
+
+# Run adaptive group (dynamic interval)
 sudo timeout 3600 python3 scheduler.py
 ```
 
-This duration ensures a sufficient observation window for capturing metric variations.
-
-
-
-
-## Benchmark & Evaluation
-
-A separate benchmarking procedure is provided to validate the scheduler’s efficiency.
-This includes:
-
-- Load simulation with Gatling (optional)
-- Network traffic capture using `tcpdump`
-- Comparison of how closely the dynamic strategy matches the baseline values
-
-For full instructions and detailed steps, see the dedicated document:  [Benchmark Section](docs/benchmark.md)
+ The scripts automatically stop after **1 hour** (3600 seconds), providing a consistent observation window.
 
 ---
 
+## Evaluation
+
+To assess the impact and efficiency of dynamic scraping:
+
+### Benchmark Steps:
+
+* Use **Gatling** to simulate fluctuating system loads
+* Capture Prometheus network traffic using `tcpdump`
+* Compare baseline vs. dynamic strategies in terms of:
+
+  * Data volume sent
+  * Metric behaviour
+
+
+
+Full procedure: [Benchmark Instructions](docs/benchmark.md)
+
+
+ Evaluation notebook: [`src/benchmark/evaluation.ipynb`](src/benchmark/evaluation.ipynb)
+
+
+---
 
 ## License
 
 This project is licensed under the MIT License.
-
-
-
-
-
-
-
-
-
-
 
 
