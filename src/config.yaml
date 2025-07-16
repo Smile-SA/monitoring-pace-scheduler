@@ -1,0 +1,15 @@
+prometheus:
+  config_file: 'prometheus.yml'             # Path to the Prometheus configuration file
+  reload_url: 'http://0.0.0.0:9091/-/reload' # URL to trigger Prometheus config reload
+
+thresholds:
+  update_threshold: 0.05       # Minimum change ratio required to update the scrape interval
+  default_scrape_interval: 15  # Initial interval (in seconds)
+  max_scrape_interval: 900     # Maximum allowed scrape interval (in seconds)
+
+metrics:
+  to_monitor:
+    - '(1 - avg(rate(node_cpu_seconds_total{mode="idle"}[1m])) by (instance)) * 100'  # CPU usage percentage
+
+csv:
+  file: 'dynamic-results.csv'  # (optional) Path to the output CSV file

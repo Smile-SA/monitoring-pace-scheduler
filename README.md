@@ -51,20 +51,17 @@ Edit `config.yaml` to define scrape logic:
 
 ```yaml
 prometheus:
-  config_file: 'prometheus.yml'             # Path to Prometheus config
-  reload_url: 'http://0.0.0.0:9091/-/reload' # Reload endpoint for config changes
+  config_file: 'prometheus.yml'             # Path to the Prometheus configuration file
+  reload_url: 'http://0.0.0.0:9091/-/reload' # URL to trigger Prometheus config reload
 
 thresholds:
-  update_threshold: 0.05       # Minimum change ratio to trigger interval update
+  update_threshold: 0.05       # Minimum change ratio required to update the scrape interval
   default_scrape_interval: 15  # Initial interval (in seconds)
-  max_scrape_interval: 900     # Upper bound for adaptive scraping
+  max_scrape_interval: 900     # Maximum allowed scrape interval (in seconds)
 
 metrics:
   to_monitor:
-    - '(1 - avg(rate(node_cpu_seconds_total{mode="idle"}[1m])) by (instance)) * 100'  # CPU usage %
-
-csv:
-  file: 'dynamic-results.csv'  # Output CSV file path
+    - '(1 - avg(rate(node_cpu_seconds_total{mode="idle"}[1m])) by (instance)) * 100'  # CPU usage percentage
 ```
 
 ---

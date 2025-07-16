@@ -6,7 +6,7 @@ import yaml
 import csv
 import os
 
-with open('dynamic_group.yml', 'r') as config_file:
+with open('config.yml', 'r') as config_file:
     config = yaml.safe_load(config_file)
 
 PROMETHEUS_CONFIG_FILE = config['prometheus']['config_file']
