@@ -60,7 +60,7 @@ thresholds:
 
 metrics:
   to_monitor:
-    - '(1 - avg(rate(node_cpu_seconds_total{mode="idle"}[1m])) by (instance)) * 100'  # CPU usage percentage
+    - '(1 - avg(rate(node_cpu_seconds_total{mode="idle"}[1m])) by (instance)) * 100'  # metric to monitor : CPU usage percentage
 ```
 
 ---
@@ -72,10 +72,10 @@ metrics:
 Run the following commands to start the fixed and adaptive monitoring groups:
 
 ```bash
-# Run baseline group (fixed interval)
+# Run baseline group 
 python3 baseline.py --duration 3600
 
-# Run adaptive group (dynamic interval)
+# Run adaptive group 
 python3 scheduler.py --duration 3600
 ```
 
