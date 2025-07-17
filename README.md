@@ -67,7 +67,6 @@ metrics:
 
 ## Execution
 
-### Launch the Monitoring Algorithms
 To run the adaptive monitoring strategy in a production-like environment:
 
 ```bash
