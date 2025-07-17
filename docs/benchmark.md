@@ -52,7 +52,7 @@ This script computes:
 
 ---
 
-### 5. Evaluate precision and interpolation accuracy (optional)
+### 5. Evaluate precision and interpolation accuracy 
 
 To assess how accurately the **Dynamic Group** captures the evolution of the metric (compared to the **Baseline Group**), you can use the evaluation notebook:
 
