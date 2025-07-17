@@ -62,7 +62,7 @@ def update_prometheus_config(metric_intervals):
             config['scrape_configs'].append({
                 'job_name': metric_name,
                 'scrape_interval': f'{scrape_interval}s',
-                'static_configs': [{'targets': ['localhost:9090']}]
+                'static_configs': [{'targets': PROMETHEUS_RELOAD_URL}]
             })
 
     with open(PROMETHEUS_CONFIG_FILE, 'w') as file:
