@@ -73,10 +73,10 @@ Run the following commands to start the fixed and adaptive monitoring groups:
 
 ```bash
 # Run baseline group (fixed interval)
-sudo timeout 3600 python3 baseline.py
+python3 baseline.py --duration 3600
 
 # Run adaptive group (dynamic interval)
-sudo timeout 3600 python3 scheduler.py
+python3 scheduler.py --duration 3600
 ```
 
  The scripts automatically stop after **1 hour** (3600 seconds), providing a consistent observation window.

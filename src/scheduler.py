@@ -5,7 +5,14 @@ import requests
 import yaml
 import csv
 import os
+import argparse
 
+# Argument parser
+parser = argparse.ArgumentParser(description="Dynamic Prometheus Scrape Interval Scheduler")
+parser.add_argument('--duration', type=int, required=True, help='Monitoring duration in seconds')
+args = parser.parse_args()
+
+# Load config
 with open('config.yml', 'r') as config_file:
     config = yaml.safe_load(config_file)
 
@@ -17,6 +24,7 @@ DEFAULT_SCRAPE_INTERVAL = config['thresholds']['default_scrape_interval']
 MAX_SCRAPE_INTERVAL = config['thresholds']['max_scrape_interval']
 METRICS_TO_MONITOR = config['metrics']['to_monitor']
 
+# CSV init
 if not os.path.exists(CSV_FILE):
     with open(CSV_FILE, 'w', newline='') as file:
         writer = csv.writer(file)
@@ -110,58 +118,6 @@ def analyze_update_frequency(updates, current_scrape_interval):
     else:
         return min(current_scrape_interval * 2, MAX_SCRAPE_INTERVAL)
 
-def analyze_update_frequency_fixed_increment(updates, current_scrape_interval, increment=15):
-    total_time = 0
-    significant_changes = 0
-
-    for i in range(1, len(updates)):
-        previous_time, previous_metrics = updates[i - 1]
-        current_time, current_metrics = updates[i]
-        time_difference = current_time - previous_time
-
-        for prev, curr in zip(previous_metrics, current_metrics):
-            prev_value = prev[1]
-            curr_value = curr[1]
-            if prev_value == 0.0:
-                continue
-            change_percent = abs((curr_value - prev_value) / prev_value)
-            if change_percent > UPDATE_THRESHOLD:
-                total_time += time_difference
-                significant_changes += 1
-
-    avg_change_time = total_time / significant_changes if significant_changes > 0 else float('inf')
-
-    if avg_change_time < current_scrape_interval:
-        return min(current_scrape_interval + increment, MAX_SCRAPE_INTERVAL)
-    else:
-        return max(current_scrape_interval - increment, 10)
-
-def analyze_update_frequency_proportional_increment(updates, current_scrape_interval, percentage=0.10):
-    total_time = 0
-    significant_changes = 0
-
-    for i in range(1, len(updates)):
-        previous_time, previous_metrics = updates[i - 1]
-        current_time, current_metrics = updates[i]
-        time_difference = current_time - previous_time
-
-        for prev, curr in zip(previous_metrics, current_metrics):
-            prev_value = prev[1]
-            curr_value = curr[1]
-            if prev_value == 0.0:
-                continue
-            change_percent = abs((curr_value - prev_value) / prev_value)
-            if change_percent > UPDATE_THRESHOLD:
-                total_time += time_difference
-                significant_changes += 1
-
-    avg_change_time = total_time / significant_changes if significant_changes > 0 else float('inf')
-
-    if avg_change_time < current_scrape_interval:
-        return min(int(current_scrape_interval * (1 + percentage)), MAX_SCRAPE_INTERVAL)
-    else:
-        return max(int(current_scrape_interval * (1 - percentage)), 10)
-
 def get_metric_scrape_interval(metric_name):
     with open(PROMETHEUS_CONFIG_FILE, 'r') as file:
         config = yaml.safe_load(file)
@@ -172,13 +128,15 @@ def get_metric_scrape_interval(metric_name):
             return int(interval.rstrip('s'))
     return DEFAULT_SCRAPE_INTERVAL
 
-def monitor_metrics():
+def monitor_metrics(duration):
+    start_time = time.time()
+
     metric_intervals = {
         metric_name: get_metric_scrape_interval(metric_name)
         for metric_name in METRICS_TO_MONITOR
     }
 
-    while True:
+    while time.time() - start_time < duration:
         for metric_name, scrape_interval in metric_intervals.items():
             print(f"Processing metric: {metric_name} with current scrape interval = {scrape_interval}s")
             updates = collect_metric_updates(metric_name, 1, scrape_interval)
@@ -191,5 +149,7 @@ def monitor_metrics():
                 print(f"No significant changes detected for {metric_name}.")
             time.sleep(new_scrape_interval)
 
+    print(f"\n✅ Monitoring finished after {duration} seconds.")
+
 if __name__ == "__main__":
-    monitor_metrics()
+    monitor_metrics(args.duration)
