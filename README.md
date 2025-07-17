@@ -68,18 +68,17 @@ metrics:
 ## Execution
 
 ### Launch the Monitoring Algorithms
-
-Run the following commands to start the fixed and adaptive monitoring groups:
+To run the adaptive monitoring strategy in a production-like environment:
 
 ```bash
-# Run baseline group 
-python3 baseline.py --duration 3600
-
 # Run adaptive group 
 python3 scheduler.py --duration 3600
 ```
 
- The scripts automatically stop after **1 hour** (3600 seconds), providing a consistent observation window.
+By default, the scheduler runs for 1 hour (```--duration 3600```)
+
+You can remove the ```--duration``` flag to run the monitoring loop continuously.
+
 
 ---
 
