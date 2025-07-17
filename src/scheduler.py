@@ -9,7 +9,8 @@ import argparse
 
 # Argument parser
 parser = argparse.ArgumentParser(description="Dynamic Prometheus Scrape Interval Scheduler")
-parser.add_argument('--duration', type=int, required=True, help='Monitoring duration in seconds')
+parser.add_argument('--duration', type=int, default=3600,
+                    help='Monitoring duration in seconds (default: 3600). Omit to run indefinitely.')
 args = parser.parse_args()
 
 # Load config
@@ -51,7 +52,7 @@ def fetch_metric_values(metric_name):
         for result in results:
             metric_value = float(result['value'][1])
             print(f"[{current_time}] Metric: '{metric_name}', Metric Value: {metric_value:.6f}, Bandwidth: {bandwidth_mbps:.2f} Mbps, Data Size: {data_size_kb:.2f} KB")
-            log_to_csv(current_time, metric_name, metric_value, bandwidth_mbps, data_size_kb)
+            log_to_csv(current_time, metric_name, bandwidth_mbps, data_size_kb)
         return [(result['metric'], float(result['value'][1])) for result in results]
     return []
 
@@ -136,7 +137,10 @@ def monitor_metrics(duration):
         for metric_name in METRICS_TO_MONITOR
     }
 
-    while time.time() - start_time < duration:
+    while True:
+        if duration and time.time() - start_time > duration:
+            break
+
         for metric_name, scrape_interval in metric_intervals.items():
             print(f"Processing metric: {metric_name} with current scrape interval = {scrape_interval}s")
             updates = collect_metric_updates(metric_name, 1, scrape_interval)
@@ -149,7 +153,8 @@ def monitor_metrics(duration):
                 print(f"No significant changes detected for {metric_name}.")
             time.sleep(new_scrape_interval)
 
-    print(f"\n✅ Monitoring finished after {duration} seconds.")
+    if args.duration:
+        print(f"\n✅ Monitoring finished after {args.duration} seconds.")
 
 if __name__ == "__main__":
     monitor_metrics(args.duration)

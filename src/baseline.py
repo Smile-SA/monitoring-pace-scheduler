@@ -9,7 +9,7 @@ import argparse
 
 # Argument parser
 parser = argparse.ArgumentParser(description="Baseline Prometheus Scrape Monitor")
-parser.add_argument('--duration', type=int, required=True, help='Monitoring duration in seconds')
+parser.add_argument('--duration', type=int, default=3600, help='Monitoring duration in seconds (default: 3600). Use 0 for infinite duration.')
 args = parser.parse_args()
 
 # Load config
@@ -65,12 +65,17 @@ def collect_metric_updates(metric_name, interval, duration):
 
 def monitor_metrics(duration):
     start_time = time.time()
-    while time.time() - start_time < duration:
+    print(f"\n🟢 Starting baseline monitoring for {duration if duration > 0 else '∞'} seconds...")
+
+    while True:
         for metric_name in METRICS_TO_MONITOR:
             print(f"Processing metric: {metric_name} every {DEFAULT_SCRAPE_INTERVAL}s")
             collect_metric_updates(metric_name, DEFAULT_SCRAPE_INTERVAL, DEFAULT_SCRAPE_INTERVAL)
 
-    print(f"\n✅ Baseline monitoring finished after {duration} seconds.")
+        if duration > 0 and time.time() - start_time >= duration:
+            break
+
+    print(f"\n✅ Baseline monitoring finished after {duration if duration > 0 else '∞'} seconds.")
 
 if __name__ == "__main__":
     monitor_metrics(args.duration)
