@@ -12,7 +12,6 @@ parser = argparse.ArgumentParser(description="Baseline Prometheus Scrape Monitor
 parser.add_argument('--duration', type=int, default=3600, help='Monitoring duration in seconds (default: 3600). Use 0 for infinite duration.')
 args = parser.parse_args()
 
-# Load config
 with open('baseline_group.yml', 'r') as config_file:
     config = yaml.safe_load(config_file)
 
@@ -21,7 +20,7 @@ METRICS_TO_MONITOR = config['metrics']['to_monitor']
 CSV_FILE = config['csv']['file']
 DEFAULT_SCRAPE_INTERVAL = 15
 
-# Init CSV
+
 if not os.path.exists(CSV_FILE):
     with open(CSV_FILE, 'w', newline='') as file:
         writer = csv.writer(file)

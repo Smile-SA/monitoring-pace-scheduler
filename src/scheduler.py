@@ -7,13 +7,12 @@ import csv
 import os
 import argparse
 
-# Argument parser
 parser = argparse.ArgumentParser(description="Dynamic Prometheus Scrape Interval Scheduler")
 parser.add_argument('--duration', type=int, default=3600,
                     help='Monitoring duration in seconds (default: 3600). Omit to run indefinitely.')
 args = parser.parse_args()
 
-# Load config
+
 with open('config.yml', 'r') as config_file:
     config = yaml.safe_load(config_file)
 
@@ -25,7 +24,7 @@ DEFAULT_SCRAPE_INTERVAL = config['thresholds']['default_scrape_interval']
 MAX_SCRAPE_INTERVAL = config['thresholds']['max_scrape_interval']
 METRICS_TO_MONITOR = config['metrics']['to_monitor']
 
-# CSV init
+
 if not os.path.exists(CSV_FILE):
     with open(CSV_FILE, 'w', newline='') as file:
         writer = csv.writer(file)
@@ -154,7 +153,7 @@ def monitor_metrics(duration):
             time.sleep(new_scrape_interval)
 
     if args.duration:
-        print(f"\n✅ Monitoring finished after {args.duration} seconds.")
+        print(f"\n Monitoring finished after {args.duration} seconds.")
 
 if __name__ == "__main__":
     monitor_metrics(args.duration)

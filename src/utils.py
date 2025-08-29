@@ -9,7 +9,7 @@ def calculate_precision_np(baseline_metrics, dynamic_metrics, tolerance=0):
     
     matching_count = 0
     
-    # Loop over each baseline metric and find the closest dynamic match
+    
     for base_value in baseline_metrics:
         # Compute absolute differences between the baseline value and all dynamic values
         differences = np.abs(dynamic_metrics - base_value)
@@ -22,27 +22,27 @@ def calculate_precision_np(baseline_metrics, dynamic_metrics, tolerance=0):
         if np.abs(closest_match - base_value) / base_value <= tolerance:
             matching_count += 1
     
-    # Calculate precision as the percentage of matched baseline values
+    
     total_baseline = len(baseline_metrics)
     precision = (matching_count / total_baseline) * 100
     
     return precision
 
 
-# Function to log data to CSV file, including the metric value
+
 def log_to_csv(timestamp, metric_name, metric_value, bandwidth_mbps, data_size_kb, cumulative_sum):
     with open(CSV_FILE, 'a', newline='') as file:
         writer = csv.writer(file)
         writer.writerow([timestamp, metric_name, f"{metric_value:.6f}", f"{bandwidth_mbps:.2f}", f"{data_size_kb:.2f}", f"{cumulative_sum:.6f}"])
 
-# Function to log alerts to a separate CSV file
+
 def log_alert(metric_name, alert_count):
     alert_time = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
     with open(ALERT_LOG_FILE, 'a', newline='') as file:
         writer = csv.writer(file)
         writer.writerow([alert_time, metric_name, alert_count])
 
-# Function to collect metric updates for a given duration
+
 def collect_metric_updates(metric_name, interval, duration):
     updates = []
     end_time = time.time() + duration
@@ -84,15 +84,14 @@ def analyze_update_frequency(updates, cumulative_sum, previous_cumulative_sum, c
     else:
         avg_change_time = float('inf')
 
-    # Check if cumulative sum exceeds threshold
-    #cumulative_change = abs(cumulative_sum - previous_cumulative_sum) / current_scrape_interval
+
     cumulative_change = cumulative_sum + previous_cumulative_sum 
     if cumulative_change > CUMULATIVE_THRESHOLD:
         print(f"Alert: Significant cumulative change detected! Change = {cumulative_change:.6f}")
         alarm_mode = True
         cumulative_sum = 0  # Reset cumulative sum after threshold is achieved
 
-    # If in alarm mode, reset scrape interval to minimal and increment alert count
+
     if alarm_mode:
         alert_counts += 1  # Increment alert count for the metric
         log_alert(updates[-1][0], alert_counts)  # Log alert time and count
