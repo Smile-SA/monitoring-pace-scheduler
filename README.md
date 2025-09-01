@@ -1,18 +1,10 @@
 
 # Monitoring Pace Scheduler
 ## Overview
-The Monitoring Pace Scheduler is an adaptive monitoring solution that dynamically adjusts collection intervals based on system behavior patterns. Unlike traditional fixed-interval approaches that collect data at constant rates regardless of system state, it implements intelligent scheduling by analyzing metric change frequencies and automatically optimizing monitoring frequencies to match system activity levels. The scheduler reduces unnecessary data collection during stable periods while increasing monitoring frequency during high-activity phases.
+The Monitoring Pace Scheduler is an adaptive monitoring solution that dynamically adjusts scrape intervals based on metric patterns. Unlike traditional fixed-interval approaches, it analyzes metric change frequencies to automatically optimize scrape intervals, reducing data collection during stable periods and increasing frequency when metrics show high activity.
 
 
-## Features
-
-- Dynamic scrape interval adaptation per Prometheus metric
-- User-defined thresholds and metric patterns
-- YAML-based configuration for Prometheus reload
-- Minimal integration steps
  
-
----
 
 ## Prerequisites
 
